@@ -64,7 +64,7 @@ fs.access(path, fs.F_OK, (err) => {
     } else {
       // terminate program
       console.log('Terminating...');
-    }  
+    }
     rl.close();
   });
 });
