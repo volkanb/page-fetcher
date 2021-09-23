@@ -4,9 +4,16 @@ const isValid = require('is-valid-path');
 const readline = require('readline');
 
 const myArgs = process.argv.slice(2);
+const myURL = myArgs[0];
+const path = myArgs[1];
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 // Check if path is valid
-if (!isValid(myArgs[1])) {
+if (!isValid(path)) {
   console.log("File path invalid! Terminating...");
   return;
 }
@@ -21,32 +28,43 @@ const isValidUrl = (url) => {
   }
   return true;
 };
-if (!isValidUrl(myArgs[0])) {
+if (!isValidUrl(myURL)) {
   console.log("URL is not valid! Terminating...");
   return;
 }
 
+// The function that creates the request and saves the response body
+const saveResponseBody = () => {
+  // Establish a connection to the url
+  request(myURL, (error, response, body) => {
+    // Write the body to specified file
+    fs.writeFile(path, body, err => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      // Log the success message
+      console.log(`Downloaded and saved ${body.length} bytes to ${path}`);
+    });
+  });
+};
+
 // Check if file already exists
-fs.access(myArgs[1], fs.F_OK, (err) => {
+fs.access(path, fs.F_OK, (err) => {
   if (err) {
-    console.error(err)
-    return
+    // File does not exist, just save the response body
+    saveResponseBody();
+    rl.close();
+    return;
   }
-
-  //file exists, ask to continue
-});
-
-// Establish a connection to the url
-request(myArgs[0], (error, response, body) => {
-  // Write the body to specified file
-  fs.writeFile(myArgs[1], body, err => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    // Log the success message
-    console.log(`Downloaded and saved ${body.length} bytes to ${myArgs[1]}`);
+  // File exists, ask to overwrite or terminate
+  rl.question('Would you like to overwrite the file?(Y/N)', (answer) => {
+    if (answer === 'Y') {
+      saveResponseBody();
+    } else {
+      // terminate program
+      console.log('Terminating...');
+    }  
+    rl.close();
   });
 });
-
-
