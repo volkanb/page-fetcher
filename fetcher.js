@@ -1,16 +1,18 @@
 const request = require('request');
-let myArgs = process.argv.slice(2);
+const myArgs = process.argv.slice(2);
+const fs = require('fs')
 
+// Establish a connection to the url
 request(myArgs[0], (error, response, body) => {
-  console.log('error:', error); // Print the error if one occurred
-  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-  console.log('body:', body); // Print the HTML for the Google homepage.
+  // Write the body to specified file
+  fs.writeFile(myArgs[1], body, err => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    // Log the success message
+    console.log(`Downloaded and saved ${body.length} bytes to ${myArgs[1]}`);
+  });
 });
 
-// get cli arguments url and path
-// --- print arguments
-// establish connection to url
-// download resource upon connection
-// save the resource to the file with path
-// log completion message with resource size
 
